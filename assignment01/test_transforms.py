@@ -95,3 +95,51 @@ def test_very_simple_rotate_right():
     assert not a.root.right.is_red
     assert a.root.right.left is None
     assert a.root.right.right is None
+
+
+def test_simple_rotate_right():
+    """Basic Right rotation
+    Test when a tree only has the root and one left red link. Both nodes insert
+    a value less than.
+    Start:
+           C
+          / RED
+         B
+        / RED
+       A
+    Expected:
+            B
+           / \
+          A   C
+    
+    This test differs from the test above in that we start with the parent node at B. 
+    This is the correct place to start. 
+    """
+
+    a = RedBlackBST()
+    a.insert_i("C", "C")
+    a.root.left = a.RedBlackNode("B", "B")
+    a.root.left.left = a.RedBlackNode("A", "A")
+    # Manually Set Parents
+    a.root.left.parent = a.root
+    a.root.left.left.parent = a.RedBlackNode("B", "B")
+
+    parent_node = a.root.left
+
+    a._tree_correction(parent_node)
+
+    assert a.root.key == "B"
+    assert a.root.parent is None
+    assert not a.root.is_red
+    assert a.root.left.key == "A"
+    assert a.root.right.key == "C"
+
+    assert a.root.left.parent.key == "B"
+    assert not a.root.left.is_red
+    assert a.root.left.left is None
+    assert a.root.left.right is None
+
+    assert a.root.right.parent.key == "B"
+    assert not a.root.right.is_red
+    assert a.root.right.left is None
+    assert a.root.right.right is None

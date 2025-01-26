@@ -1,3 +1,6 @@
+from email.headerregistry import HeaderRegistry
+
+
 class RedBlackBST:
     """A Python Implementation of a Red-Black Binary Search Tree"""
 
@@ -59,7 +62,7 @@ class RedBlackBST:
         self._put_i(parent_node, insert_node)
 
         # ONCE INSERTED, TRAVERSE UP CURR.PARENT
-
+        self._tree_correction(parent_node)
         return
 
     def _rotate_left_i(self, node):
@@ -73,14 +76,17 @@ class RedBlackBST:
         x.is_red = node.is_red
         node.is_red = True
 
+        # I seem to have a problem in the parent links
         # Manage parent links
         if not node.parent:
             x.parent = None
             self.root = x
         elif node.parent.left == node:
             node.parent.left = x
+            x.parent = node.parent
         else:
             node.parent.right = x
+            x.parent = node.parent
 
         node.parent = x
         return None
@@ -102,8 +108,10 @@ class RedBlackBST:
             self.root = x
         elif node.parent.left == node:
             node.parent.left = x
+            x.parent = node.parent
         else:
             node.parent.right = x
+            x.parent = node.parent
 
         node.parent = x
 
