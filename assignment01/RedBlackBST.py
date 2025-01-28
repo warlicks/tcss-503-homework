@@ -1,6 +1,3 @@
-from email.headerregistry import HeaderRegistry
-
-
 class RedBlackBST:
     """A Python Implementation of a Red-Black Binary Search Tree"""
 
@@ -76,20 +73,22 @@ class RedBlackBST:
         x.is_red = node.is_red
         node.is_red = True
 
-        # I seem to have a problem in the parent links
         # Manage parent links
         if not node.parent:
             x.parent = None
             self.root = x
+            if node.right:
+                node.right.parent = node
         elif node.parent.left == node:
             node.parent.left = x
             x.parent = node.parent
+            x.left.parent = x
         else:
             node.parent.right = x
             x.parent = node.parent
 
         node.parent = x
-        return None
+        return x
 
     def _rotate_right_i(self, node):
         """Perform a `rotation_right` around the node provided.  Return the new root of newly rotated local cluster.
@@ -114,6 +113,7 @@ class RedBlackBST:
             x.parent = node.parent
 
         node.parent = x
+        return x
 
     def _insertion_search(self, insert_node: RedBlackNode) -> RedBlackNode:
         """Finds the node where insertion should happen
@@ -132,7 +132,7 @@ class RedBlackBST:
         """
 
         current_node = self.root
-        while True:
+        while current_node is not None:
             if insert_node.key < current_node.key:
                 if current_node.left is not None:
                     current_node = current_node.left
@@ -161,17 +161,16 @@ class RedBlackBST:
 
         current_node = parent_node
 
-        while current_node:
+        while current_node is not None:
             # Do rotate right check before flip colors b/c we have to flip after rotate
             if self._left_left_is_red(current_node):
-                self._rotate_right_i(current_node)
+                current_node = self._rotate_right_i(current_node)
             if self._right_is_red(current_node) and not self._left_is_red(current_node):
-                self._rotate_left_i(current_node)
+                current_node = self._rotate_left_i(current_node)
             if self._left_is_red(current_node) and self._right_is_red(current_node):
                 self._flip_colors(current_node)
 
             current_node = current_node.parent
-
         self.root.is_red = False
 
     ########### THE BELOW METHODS ARE FOR STUDENT USE AND CAN BE USED AS IS IN THE ITERATIVE IMPLEMENTATION
@@ -353,4 +352,5 @@ def test_bst(bst):
 
 if __name__ == "__main__":
     bst = RedBlackBST()
+    assert bst.search("A") is None
     test_bst(bst)
