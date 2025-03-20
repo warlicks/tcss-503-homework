@@ -48,13 +48,16 @@ class Adventurer:
         print(f"Adventurer (Total Carry Capacity: {self.carry_weight})")
         print(f"Total Carry Weight: {sum(item.weight for item in self.inventory)}")
         print(f"Total Carry Value: {sum(item.value for item in self.inventory)}")
-        print(f"Total Coin Purse Value: {sum(k * v for k, v in self.coin_purse.items())}")
+        print(
+            f"Total Coin Purse Value: {sum(k * v for k, v in self.coin_purse.items())}"
+        )
         print("\n== COINS ==")
         for k, v in self.coin_purse.items():
             print(f"{Game.COINS[k]} ({k}): {v}")
         print("\n== INVENTORY ==")
         for item in self.inventory:
             print(item)
+        print("")
 
 
 class Chest:
@@ -160,7 +163,7 @@ class Game:
         self.chests = []
 
     def show_player_inventory(self):
-        print(self.player.show_inventory())
+        self.player.show_inventory()
 
     def add_chest(self, chest):
         """
@@ -236,13 +239,17 @@ class Game:
         :return: None
         """
         total_value = sum(item.value for item in self.player.inventory)
-        pass
+        item_weight = sum(item.weight for item in self.player.inventory)
+        min_coins = self._ideal_selling(total_value)
+        self._summarize_coins(min_coins)
+        self.player.inventory.clear()
+        self.player.carry_weight += item_weight
 
     def _knapsack_solution(self, chest, weight):
         # Create a an array to store the resuslt. Dim in number of itmes by maximum weight + 1
         result = np.zeros((len(chest.contents), (weight + 1)))
 
-        # intailize the first row using the frist time
+        # intailize the first row using the first itme
         for j in range(weight + 1):
             result[0, j] = (
                 chest.contents[0].value if chest.contents[0].weight <= j else 0
@@ -275,9 +282,34 @@ class Game:
             if result[row - 1, col] != result[row, col]:
                 col -= chest.contents[row].weight
                 items.append(chest.contents.pop(row))
-                
+
             row -= 1
         return items
+
+    def _ideal_selling(self, total_value):
+        storage = [[]] * (total_value + 1)
+        for v in range(1, total_value + 1):
+            current_solution = None
+            # At each value check each coin
+            for coin in self.COINS.items():
+                previous_value = v - coin[0]
+                if previous_value >= 0:
+                    # Check for a valid solution
+                    if storage[previous_value] is None:
+                        continue
+                    current = storage[previous_value].copy()
+                    current.append(coin[0])
+                    if current_solution is None or len(current) < len(current_solution):
+                        current_solution = current
+            storage[v] = current_solution
+        return storage[total_value]
+
+    def _summarize_coins(self, coin_list):
+        for c in coin_list:
+            if c in self.player.coin_purse.keys():
+                self.player.coin_purse[c] += 1
+            else:
+                self.player.coin_purse[c] = 1
 
 
 if __name__ == "__main__":
@@ -304,6 +336,6 @@ if __name__ == "__main__":
 
     # THE CAME SHOULD HAVE A METHOD TO TAKE INVENTORY FROM THE PLAYER
     # CONVERT IT INTO PROPER DENOMINATIONS, AND PLACE THAT DATA INTO THE COIN PURSE
-    # game.sell_items()
+    game.sell_items()
 
-    # game.show_player_inventory()
+    game.show_player_inventory()
